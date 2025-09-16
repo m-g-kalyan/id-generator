@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MG Solutions — ID Card Generator</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --header:#cbe7ff; /* light pastel blue */
+      --body:#ffffff;   /* white background */
+      --text:#1f2937;
+      --muted:#6b7280;
+    }
+
+    body{
+      background:var(--bg);
+      min-height:100vh;
+      display:flex;
+      gap:2rem;
+      align-items:flex-start;
+      justify-content:center;
+      padding:40px;
+      font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    }
+
+    .panel{
+      width:320px;
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.06);
+      padding:18px;
+    }
+    .panel h2{margin:0 0 10px;font-size:18px;color:var(--text)}
+    label{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+    input[type=text], input[type=number]{
+      width:100%;padding:8px;border-radius:8px;
+      border:1px solid #dbe3ee;background:#f9fbfd;font-size:14px
+    }
+    .row{display:flex;gap:8px}
+    .row input{flex:1}
+    input[type=file]{padding:6px}
+    button{
+      margin-top:12px;width:100%;padding:10px;border-radius:8px;
+      border:0;background:#3b82f6;color:white;font-weight:600;cursor:pointer
+    }
+    button.secondary{background:#fff;border:1px solid #93c5fd;color:#1f2937}
+
+    .preview-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+
+    /* ID card */
+    .id-wrapper{
+      width:340px;height:200px;border-radius:14px;overflow:hidden;
+      border:1px solid #e2e8f0;background:var(--body);
+      box-shadow:0 4px 16px rgba(0,0,0,0.08);display:flex;flex-direction:column
+    }
+    .id-header{
+      background:var(--header);padding:10px 14px;display:flex;align-items:center;gap:10px
+    }
+    .logo{width:40px;height:40px;border-radius:8px;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .company{font-size:16px;font-weight:700;color:#1e3a8a}
+    .company small{display:block;font-weight:500;font-size:11px;color:#374151}
+
+    .id-body{flex:1;display:flex;gap:12px;padding:12px}
+    .photo{width:90px;height:110px;border-radius:8px;background:#f0f4f9;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .photo img{width:100%;height:100%;object-fit:cover}
+    .details{flex:1;color:var(--text)}
+    .details h3{margin:0;font-size:16px}
+    .meta{margin-top:4px;font-size:13px;color:#374151}
+
+    .id-footer{padding:6px 12px;display:flex;justify-content:flex-end}
+    .barcode{
+      width:140px;height:28px;
+      background:repeating-linear-gradient(
+        90deg,
+        #000 0px,#000 2px,
+        #fff 2px,#fff 4px
+      );
+      border-radius:2px
+    }
+
+    .note{font-size:12px;color:var(--muted);margin-top:8px}
+    footer.small{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+    @media(max-width:880px){body{flex-direction:column;align-items:center;padding:20px}.panel{width:92%}}
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h2>MG Solutions — ID Card Generator</h2>
+    <label for="fullName">Full name</label>
+    <input id="fullName" type="text" placeholder="Enter the name">
+
+    <div class="row">
+      <div style="flex:1">
+        <label for="age">Age</label>
+        <input id="age" type="number" placeholder="enter age" min="0">
+      </div>
+      <div style="width:140px">
+        <label for="empid">Employee ID</label>
+        <input id="empid" type="text" placeholder="MG-001">
+      </div>
+    </div>
+
+    <label for="photo">Upload photo</label>
+    <input id="photo" type="file" accept="image/*">
+
+    <button id="generate">Generate ID</button>
+    <button id="download" class="secondary">Download PNG</button>
+
+    <p class="note">Tip: upload a clear headshot. You can take a screenshot or download the PNG.</p>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="id-wrapper" id="preview">
+      <div class="id-header">
+        <div class="logo">MG</div>
+        <div>
+          <div class="company">MG Solutions</div>
+          <small>Employee Identity</small>
+        </div>
+      </div>
+      <div class="id-body">
+        <div class="photo" id="photoPreview">Photo</div>
+        <div class="details">
+          <h3 id="pName">Full Name</h3>
+          <div class="meta">Age: <span id="pAge">--</span></div>
+          <div class="meta">Employee ID: <strong id="pEmp">--</strong></div>
+        </div>
+      </div>
+      <div class="id-footer">
+        <div class="barcode"></div>
+      </div>
+    </div>
+    <footer class="small">Preview (screenshot or download)</footer>
+  </div>
+
+  <canvas id="exportCanvas" width="1000" height="600" style="display:none"></canvas>
+
+  <script>
+    const fullName = document.getElementById('fullName');
+    const age = document.getElementById('age');
+    const empid = document.getElementById('empid');
+    const photoInput = document.getElementById('photo');
+    const pName = document.getElementById('pName');
+    const pAge = document.getElementById('pAge');
+    const pEmp = document.getElementById('pEmp');
+    const photoPreview = document.getElementById('photoPreview');
+    const generateBtn = document.getElementById('generate');
+    const downloadBtn = document.getElementById('download');
+    const canvas = document.getElementById('exportCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let uploadedImage = null;
+
+    function updatePreview(){
+      pName.textContent = fullName.value.trim() || 'Full Name';
+      pAge.textContent = age.value || '--';
+      pEmp.textContent = empid.value || '--';
+    }
+
+    fullName.addEventListener('input', updatePreview);
+    age.addEventListener('input', updatePreview);
+    empid.addEventListener('input', updatePreview);
+
+    photoInput.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        uploadedImage = new Image();
+        uploadedImage.onload = ()=>{
+          photoPreview.innerHTML = '';
+          uploadedImage.style = 'width:100%;height:100%;object-fit:cover;';
+          photoPreview.appendChild(uploadedImage);
+        };
+        uploadedImage.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function drawBarcode(ctx,x,y,w,h){
+      const bands = 40;
+      const bandW = w / bands;
+      for(let i=0;i<bands;i++){
+        ctx.fillStyle = (i%2===0)?'#000':'#fff';
+        ctx.fillRect(x + i*bandW, y, bandW, h);
+      }
+    }
+
+    function generateCanvas(){
+      const W=canvas.width,H=canvas.height;
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(0,0,W,H);
+
+      // header
+      ctx.fillStyle='#cbe7ff';
+      ctx.fillRect(0,0,W,150);
+      ctx.fillStyle='#1e3a8a';
+      ctx.font='bold 48px sans-serif';
+      ctx.fillText('MG Solutions',40,90);
+      ctx.font='20px sans-serif';
+      ctx.fillText('Employee Identity Card',40,125);
+
+      // photo
+      const photoX=60,photoY=200,photoW=260,photoH=320;
+      ctx.fillStyle='#f0f4f9';
+      ctx.fillRect(photoX,photoY,photoW,photoH);
+      if(uploadedImage){
+        ctx.drawImage(uploadedImage,photoX,photoY,photoW,photoH);
+      }
+
+      // details
+      ctx.fillStyle='#111827';
+      ctx.font='bold 40px sans-serif';
+      ctx.fillText(fullName.value.trim()||'Full Name',350,250);
+      ctx.font='28px sans-serif';
+      ctx.fillText('Age: '+(age.value||'--'),350,310);
+      ctx.fillText('Employee ID: '+(empid.value||'--'),350,360);
+
+      // barcode
+      drawBarcode(ctx,W-300,H-120,220,60);
+    }
+
+    generateBtn.addEventListener('click', ()=>{
+      generateCanvas();
+      updatePreview();
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      generateCanvas();
+      const link=document.createElement('a');
+      link.download=(empid.value||'MG_ID')+'.png';
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    updatePreview();
+  </script>
+</body>
+</html>
