@@ -6,94 +6,67 @@
   <title>MG Solutions — ID Card Generator</title>
   <style>
     :root{
-      --bg:#f8fafc;
-      --header:#cbe7ff; /* light pastel blue */
-      --body:#ffffff;   /* white background */
-      --text:#1f2937;
-      --muted:#6b7280;
+      --bg:#f3f6fb;
+      --card:#0b2545; /* deep navy */
+      --accent:#1fa2ff; /* bright blue */
+      --muted:#9aa8bf;
+      --white:#ffffff;
+      --card-width:1000px; /* canvas base width for export */
+      --card-height:600px;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     }
 
-    body{
-      background:var(--bg);
-      min-height:100vh;
-      display:flex;
-      gap:2rem;
-      align-items:flex-start;
-      justify-content:center;
-      padding:40px;
-      font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-    }
+    body{background:linear-gradient(180deg,var(--bg),#e9f0fb);min-height:100vh;display:flex;gap:2rem;align-items:flex-start;justify-content:center;padding:40px}
 
-    .panel{
-      width:320px;
-      background:#fff;
-      border-radius:12px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.06);
-      padding:18px;
-    }
-    .panel h2{margin:0 0 10px;font-size:18px;color:var(--text)}
+    .panel{width:360px;background:var(--white);border-radius:12px;box-shadow:0 8px 30px rgba(12,20,40,0.08);padding:18px}
+    .panel h2{margin:0 0 10px;font-size:18px;color:var(--card)}
     label{display:block;font-size:13px;color:var(--muted);margin-top:10px}
-    input[type=text], input[type=number]{
-      width:100%;padding:8px;border-radius:8px;
-      border:1px solid #dbe3ee;background:#f9fbfd;font-size:14px
-    }
+    input[type=text], input[type=number]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6edf7;background:#fbfdff;font-size:14px}
     .row{display:flex;gap:8px}
     .row input{flex:1}
-    input[type=file]{padding:6px}
-    button{
-      margin-top:12px;width:100%;padding:10px;border-radius:8px;
-      border:0;background:#3b82f6;color:white;font-weight:600;cursor:pointer
-    }
-    button.secondary{background:#fff;border:1px solid #93c5fd;color:#1f2937}
+    input[type=file]{padding:8px}
+    button{margin-top:12px;width:100%;padding:11px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#0072e6);color:white;font-weight:600;cursor:pointer}
+    button.secondary{background:#fff;border:1px solid #d6e6ff;color:var(--card)}
 
     .preview-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
 
-    /* ID card */
-    .id-wrapper{
-      width:340px;height:200px;border-radius:14px;overflow:hidden;
-      border:1px solid #e2e8f0;background:var(--body);
-      box-shadow:0 4px 16px rgba(0,0,0,0.08);display:flex;flex-direction:column
-    }
-    .id-header{
-      background:var(--header);padding:10px 14px;display:flex;align-items:center;gap:10px
-    }
-    .logo{width:40px;height:40px;border-radius:8px;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
-    .company{font-size:16px;font-weight:700;color:#1e3a8a}
-    .company small{display:block;font-weight:500;font-size:11px;color:#374151}
+    /* On-screen preview card */
+    .id-wrapper{width:340px;height:200px;border-radius:12px;padding:14px;box-shadow:0 8px 24px rgba(5,15,40,0.08);background:linear-gradient(180deg,var(--card),#053059);color:var(--white);position:relative;overflow:hidden}
+    .id-header{display:flex;align-items:center;gap:10px}
+    .logo{width:56px;height:56px;border-radius:8px;background:var(--white);display:flex;align-items:center;justify-content:center;color:var(--card);font-weight:700;font-size:18px}
+    .company{font-size:16px;font-weight:700;letter-spacing:0.6px}
+    .company small{display:block;font-weight:500;font-size:11px;color:rgba(255,255,255,0.9)}
 
-    .id-body{flex:1;display:flex;gap:12px;padding:12px}
-    .photo{width:90px;height:110px;border-radius:8px;background:#f0f4f9;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .id-body{display:flex;gap:12px;margin-top:12px}
+    .photo{width:100px;height:120px;border-radius:8px;background:linear-gradient(180deg,#18385f,#06283a);overflow:hidden;display:flex;align-items:center;justify-content:center}
     .photo img{width:100%;height:100%;object-fit:cover}
-    .details{flex:1;color:var(--text)}
-    .details h3{margin:0;font-size:16px}
-    .meta{margin-top:4px;font-size:13px;color:#374151}
+    .details{flex:1;color:rgba(255,255,255,0.95)}
+    .details h3{margin:0;font-size:18px}
+    .meta{margin-top:6px;font-size:13px;color:rgba(255,255,255,0.9)}
 
-    .id-footer{padding:6px 12px;display:flex;justify-content:flex-end}
-    .barcode{
-      width:140px;height:28px;
-      background:repeating-linear-gradient(
-        90deg,
-        #000 0px,#000 2px,
-        #fff 2px,#fff 4px
-      );
-      border-radius:2px
-    }
+    .id-footer{position:absolute;right:0;bottom:0;padding:10px 14px;background:linear-gradient(90deg,rgba(255,255,255,0.06),transparent);display:flex;flex-direction:column;align-items:flex-end}
+    .barcode{width:160px;height:32px;background:linear-gradient(90deg,#fff,#fff);filter:opacity(0.15);border-radius:4px;margin-top:6px}
 
     .note{font-size:12px;color:var(--muted);margin-top:8px}
+
+    .actions{display:flex;gap:10px}
+
     footer.small{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
-    @media(max-width:880px){body{flex-direction:column;align-items:center;padding:20px}.panel{width:92%}}
+
+    /* responsive */
+    @media (max-width:880px){body{flex-direction:column;align-items:center;padding:20px}.panel{width:92%}}
   </style>
 </head>
 <body>
   <div class="panel">
     <h2>MG Solutions — ID Card Generator</h2>
     <label for="fullName">Full name</label>
-    <input id="fullName" type="text" placeholder="Enter the name">
+    <input id="fullName" type="text" placeholder="e.g. M. Gokul Kalyan" value="">
 
     <div class="row">
       <div style="flex:1">
         <label for="age">Age</label>
-        <input id="age" type="number" placeholder="enter age" min="0">
+        <input id="age" type="number" placeholder="e.g. 22" min="0">
       </div>
       <div style="width:140px">
         <label for="empid">Employee ID</label>
@@ -101,13 +74,15 @@
       </div>
     </div>
 
-    <label for="photo">Upload photo</label>
+    <label for="photo">Upload photo (square recommended)</label>
     <input id="photo" type="file" accept="image/*">
 
-    <button id="generate">Generate ID</button>
-    <button id="download" class="secondary">Download PNG</button>
+    <div class="actions">
+      <button id="generate">Generate ID</button>
+      <button id="download" class="secondary">Download PNG</button>
+    </div>
 
-    <p class="note">Tip: upload a clear headshot. You can take a screenshot or download the PNG.</p>
+    <p class="note">Tip: for best results upload a clear front-facing headshot. Click "Download PNG" to save the generated card.</p>
   </div>
 
   <div class="preview-wrap">
@@ -116,11 +91,16 @@
         <div class="logo">MG</div>
         <div>
           <div class="company">MG Solutions</div>
-          <small>Employee Identity</small>
+          <small>Employee Identity Card</small>
         </div>
       </div>
       <div class="id-body">
-        <div class="photo" id="photoPreview">Photo</div>
+        <div class="photo" id="photoPreview">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="3" fill="rgba(255,255,255,0.18)"/>
+            <rect x="4" y="14" width="16" height="6" rx="2" fill="rgba(255,255,255,0.06)"/>
+          </svg>
+        </div>
         <div class="details">
           <h3 id="pName">Full Name</h3>
           <div class="meta">Age: <span id="pAge">--</span></div>
@@ -128,10 +108,12 @@
         </div>
       </div>
       <div class="id-footer">
-        <div class="barcode"></div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.9)">Valid: <strong>2025</strong></div>
+        <div class="barcode" id="barcode"></div>
       </div>
     </div>
-    <footer class="small">Preview (screenshot or download)</footer>
+
+    <footer class="small">Preview (take screenshot or download the PNG)</footer>
   </div>
 
   <canvas id="exportCanvas" width="1000" height="600" style="display:none"></canvas>
@@ -141,10 +123,12 @@
     const age = document.getElementById('age');
     const empid = document.getElementById('empid');
     const photoInput = document.getElementById('photo');
+
     const pName = document.getElementById('pName');
     const pAge = document.getElementById('pAge');
     const pEmp = document.getElementById('pEmp');
     const photoPreview = document.getElementById('photoPreview');
+
     const generateBtn = document.getElementById('generate');
     const downloadBtn = document.getElementById('download');
     const canvas = document.getElementById('exportCanvas');
@@ -152,6 +136,7 @@
 
     let uploadedImage = null;
 
+    // live-bind inputs to preview
     function updatePreview(){
       pName.textContent = fullName.value.trim() || 'Full Name';
       pAge.textContent = age.value || '--';
@@ -169,6 +154,7 @@
       reader.onload = function(ev){
         uploadedImage = new Image();
         uploadedImage.onload = ()=>{
+          // clear preview
           photoPreview.innerHTML = '';
           uploadedImage.style = 'width:100%;height:100%;object-fit:cover;';
           photoPreview.appendChild(uploadedImage);
@@ -178,62 +164,156 @@
       reader.readAsDataURL(file);
     });
 
-    function drawBarcode(ctx,x,y,w,h){
-      const bands = 40;
+    // draw a simple barcode-like pattern on a given context at (x,y,w,h)
+    function drawBarcode(ctx,x,y,w,h,seedText){
+      const bands = 24;
       const bandW = w / bands;
+      ctx.save();
       for(let i=0;i<bands;i++){
-        ctx.fillStyle = (i%2===0)?'#000':'#fff';
-        ctx.fillRect(x + i*bandW, y, bandW, h);
+        const darkness = (i % 3 === 0) ? 0 : 1 - ((i + seedText.length) % 4) * 0.15;
+        ctx.fillStyle = `rgba(0,0,0,${0.15 * darkness})`;
+        if(i % 2 === 0) ctx.fillRect(x + i*bandW, y, bandW * (1 + (i%5===0?0.6:0)), h);
       }
+      ctx.restore();
     }
 
+    // Generate to canvas at high resolution then set as image for download
     function generateCanvas(){
-      const W=canvas.width,H=canvas.height;
-      ctx.fillStyle='#ffffff';
+      // canvas sized by CSS variables
+      const W = canvas.width; // 1000
+      const H = canvas.height; // 600
+
+      // background: deep gradient
+      const g = ctx.createLinearGradient(0,0,W,H);
+      g.addColorStop(0,'#0b2545');
+      g.addColorStop(1,'#053059');
+      ctx.fillStyle = g;
       ctx.fillRect(0,0,W,H);
 
-      // header
-      ctx.fillStyle='#cbe7ff';
-      ctx.fillRect(0,0,W,150);
-      ctx.fillStyle='#1e3a8a';
-      ctx.font='bold 48px sans-serif';
-      ctx.fillText('MG Solutions',40,90);
-      ctx.font='20px sans-serif';
-      ctx.fillText('Employee Identity Card',40,125);
+      // left padding
+      const pad = 60;
 
-      // photo
-      const photoX=60,photoY=200,photoW=260,photoH=320;
-      ctx.fillStyle='#f0f4f9';
-      ctx.fillRect(photoX,photoY,photoW,photoH);
+      // company block
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(pad,30,180,80);
+      ctx.fillStyle = '#0b2545';
+      ctx.font = 'bold 44px sans-serif';
+      ctx.fillText('MG', pad + 22, 80);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = '700 34px sans-serif';
+      ctx.fillText('MG Solutions', pad + 240, 74);
+      ctx.font = '600 18px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.fillText('Employee Identity Card', pad + 240, 104);
+
+      // photo area
+      const photoX = pad;
+      const photoY = 140;
+      const photoW = 300;
+      const photoH = 360;
+
+      // draw photo background panel
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      roundRect(ctx, photoX, photoY, photoW, photoH, 14, true, false);
+
+      // draw photo if uploaded
       if(uploadedImage){
-        ctx.drawImage(uploadedImage,photoX,photoY,photoW,photoH);
+        // draw image to fit crop center
+        const img = uploadedImage;
+        // compute cover-style rendering
+        const ratioCard = photoW / photoH;
+        const ratioImg = img.width / img.height;
+        let drawW = photoW, drawH = photoH, sx=0, sy=0, sw=img.width, sh=img.height;
+        if(ratioImg > ratioCard){
+          // image is wider, crop sides
+          sh = img.height;
+          sw = Math.round(sh * ratioCard);
+          sx = Math.round((img.width - sw)/2);
+        } else {
+          // taller, crop top/bottom
+          sw = img.width;
+          sh = Math.round(sw / ratioCard);
+          sy = Math.round((img.height - sh)/2);
+        }
+        try{
+          ctx.drawImage(img, sx, sy, sw, sh, photoX, photoY, photoW, photoH);
+        }catch(e){
+          // fallback: fill
+          ctx.fillStyle = '#cfdff4';
+          roundRect(ctx, photoX, photoY, photoW, photoH, 14, true, false);
+        }
+      } else {
+        // placeholder icon
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        roundRect(ctx, photoX, photoY, photoW, photoH, 14, true, false);
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.beginPath();
+        ctx.arc(photoX + photoW/2, photoY + 120, 48, 0, Math.PI*2);
+        ctx.fill();
+        ctx.font = '600 18px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fillText('Upload Photo', photoX + 40, photoY + photoH - 30);
       }
 
-      // details
-      ctx.fillStyle='#111827';
-      ctx.font='bold 40px sans-serif';
-      ctx.fillText(fullName.value.trim()||'Full Name',350,250);
-      ctx.font='28px sans-serif';
-      ctx.fillText('Age: '+(age.value||'--'),350,310);
-      ctx.fillText('Employee ID: '+(empid.value||'--'),350,360);
+      // details block
+      const dX = photoX + photoW + 36;
+      const dY = photoY + 20;
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = '700 44px sans-serif';
+      ctx.fillText(fullName.value.trim() || 'Full Name', dX, dY + 28);
 
-      // barcode
-      drawBarcode(ctx,W-300,H-120,220,60);
+      ctx.font = '600 26px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.fillText('Age: ' + (age.value || '--'), dX, dY + 84);
+      ctx.fillText('Employee ID: ' + (empid.value || '--'), dX, dY + 124);
+
+      // small footer & barcode
+      drawBarcode(ctx, W - 320, H - 180, 240, 44, empid.value || 'MG');
+
+      // signature block
+      ctx.font = '600 18px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillText('Authorized Signature', W - 330, H - 60);
+
+      // company small text
+      ctx.font = '500 14px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillText('MG Solutions — Trust • Secure • Deliver', pad, H - 30);
+    }
+
+    function roundRect(ctx,x,y,w,h,r,fill,stroke){
+      if(typeof r === 'undefined') r = 5;
+      ctx.beginPath();
+      ctx.moveTo(x+r,y);
+      ctx.arcTo(x+w,y,x+w,y+h,r);
+      ctx.arcTo(x+w,y+h,x,y+h,r);
+      ctx.arcTo(x,y+h,x,y,r);
+      ctx.arcTo(x,y,x+w,y,r);
+      ctx.closePath();
+      if(fill) ctx.fill();
+      if(stroke) ctx.stroke();
     }
 
     generateBtn.addEventListener('click', ()=>{
       generateCanvas();
+      // also update the small on-page preview text
       updatePreview();
+      // small visual flash to indicate success
+      generateBtn.textContent = 'Generated ✓';
+      setTimeout(()=>generateBtn.textContent = 'Generate ID', 1600);
     });
 
     downloadBtn.addEventListener('click', ()=>{
+      // ensure canvas generated
       generateCanvas();
-      const link=document.createElement('a');
-      link.download=(empid.value||'MG_ID')+'.png';
-      link.href=canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = (empid.value ? empid.value + '-' : '') + (fullName.value ? fullName.value.replace(/\s+/g,'_') : 'MG_ID') + '.png';
+      link.href = canvas.toDataURL('image/png');
       link.click();
     });
 
+    // initialize preview bindings
     updatePreview();
   </script>
 </body>
